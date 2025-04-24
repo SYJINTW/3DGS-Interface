@@ -206,3 +206,11 @@ class GaussianModel():
         indices = np.where((self.xyz[:, 2] < _min) | (self.xyz[:, 2] > _max))[0]
         print(f"Delete {indices.shape[0]} points")
         self.delete_Gaussian(indices)
+
+    def recenter(self):
+        bound = self.get_bound()
+        center_x = (bound[0][0] + bound[1][0]) / 2
+        center_y = (bound[0][1] + bound[1][1]) / 2
+        center_z = (bound[0][2] + bound[1][2]) / 2
+        self.shift([0-center_x, 0-center_y, 0-center_z])
+        
