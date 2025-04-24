@@ -30,8 +30,8 @@ class GaussianModel():
     def __str__(self):
         return f"This Gaussians contains {self.num_of_point} of Gaussian point and SH degree is {self.sh_deg}"
 
-    def load_gaussian_ply(self, path: Path) -> list:
-        plydata = PlyData.read(str(path))
+    def load_gaussian_ply(self, path: str) -> list:
+        plydata = PlyData.read(path)
         # --------------------------------- Position --------------------------------- #
         self.xyz = np.stack((np.asarray(plydata.elements[0]["x"]),
                             np.asarray(plydata.elements[0]["y"]),
@@ -76,7 +76,7 @@ class GaussianModel():
         for idx, attr_name in enumerate(rot_names):
             self.rots[:, idx] = np.asarray(plydata.elements[0][attr_name])
 
-    def export_gs_to_ply(self, save_path: Path, 
+    def export_gs_to_ply(self, save_path: str, 
                          xyz=True, normals=True, colors=True, opacities=True, scales=True, rots=True,
                          ascii=False):
         
@@ -127,9 +127,9 @@ class GaussianModel():
         el = PlyElement.describe(elements, 'vertex')
         
         if ascii:
-            PlyData([el], text=True).write(str(save_path))
+            PlyData([el], text=True).write(save_path)
         else:
-            PlyData([el]).write(str(save_path))
+            PlyData([el]).write(save_path)
     
     def shift(self, center=[0,0,0]):
         self.xyz = self.xyz + center
@@ -138,7 +138,7 @@ class GaussianModel():
         max_indices = []
         max_values = []
         for i in range(3):
-            _col = self.xyz[:, 0]
+            _col = self.xyz[:, i]
             _max_index = np.argmax(_col)
             _max_value = _col[_max_index]
             max_indices.append(_max_index)
@@ -147,7 +147,7 @@ class GaussianModel():
         min_indices = []
         min_values = []
         for i in range(3):
-            _col = self.xyz[:, 0]
+            _col = self.xyz[:, i]
             _min_index = np.argmin(_col)
             _min_value = _col[_min_index]
             min_indices.append(_min_index)
@@ -179,4 +179,30 @@ class GaussianModel():
             self.sh_deg = target_sh_deg
         else:
             print(f"The target degree ({target_sh_deg}) is larger than Gaussians' degree ({self.sh_deg})")
-            
+
+    def limit_x(self, _min, _max):
+        _bound = self.get_bound()
+        _min = max(_min, _bound[0][0])
+        _max = min(_max, _bound[1][0])
+        print(np.where((self.xyz[:, 0] < _min) | (self.xyz[:, 0] > _max)))
+        indices = np.where((self.xyz[:, 0] < _min) | (self.xyz[:, 0] > _max))[0]
+        print(f"Delete {indices.shape[0]} points")
+        self.delete_Gaussian(indices)
+    
+    def limit_y(self, _min, _max):
+        _bound = self.get_bound()
+        _min = max(_min, _bound[0][1])
+        _max = min(_max, _bound[1][1])
+        print(_min, _max)
+        indices = np.where((self.xyz[:, 1] < _min) | (self.xyz[:, 1] > _max))[0]
+        print(f"Delete {indices.shape[0]} points")
+        self.delete_Gaussian(indices)
+
+    def limit_z(self, _min, _max):
+        _bound = self.get_bound()
+        _min = max(_min, _bound[0][2])
+        _max = min(_max, _bound[1][2])
+        print(_min, _max)
+        indices = np.where((self.xyz[:, 2] < _min) | (self.xyz[:, 2] > _max))[0]
+        print(f"Delete {indices.shape[0]} points")
+        self.delete_Gaussian(indices)
