@@ -213,4 +213,7 @@ class GaussianModel():
         center_y = (bound[0][1] + bound[1][1]) / 2
         center_z = (bound[0][2] + bound[1][2]) / 2
         self.shift([0-center_x, 0-center_y, 0-center_z])
-        
+    
+    def sort(self):
+        sort_idx = np.argsort(self.xyz[:, 0])
+        self.xyz = self.xyz[sort_idx]
