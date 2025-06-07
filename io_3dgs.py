@@ -277,6 +277,17 @@ class GaussianModelV2():
         else:
             print(f"Attribute {key} not found in the model.")
 
+    def extract_gaussians(self, indices: list):
+        """
+        Extracts a subset of Gaussians based on the provided indices.
+        Returns a new GaussianModelV2 instance with the extracted data.
+        """
+        new_gs = GaussianModelV2.__new__(GaussianModelV2)
+        new_gs.data = {key: {"val_dtype": value["val_dtype"], "data": value["data"][indices]} for key, value in self.data.items()}
+        new_gs.num_of_point = len(indices)
+        new_gs.sh_deg = self.sh_deg
+        return new_gs
+
     def export_gs_to_ply(self, save_path: str, ascii=False):
         
         assert hasattr(self, 'data'), "self.data must be loaded via load_gaussian_ply()"
